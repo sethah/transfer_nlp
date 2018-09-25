@@ -1,0 +1,24 @@
+name: nlp_fun
+channels:
+- conda-forge
+- defaults
+- pytorch
+dependencies:
+- python=3.6
+- matplotlib
+- numpy
+- pandas
+- scipy
+- pytorch
+- ipython
+- tqdm
+- scikit-learn
+- jupyter
+- nb_conda
+- umap-learn
+- spacy
+- gensim
+- pip:
+  - torchtext
+  - ftfy
+  - git+https://github.com/sethah/pytorch-transformer.git
