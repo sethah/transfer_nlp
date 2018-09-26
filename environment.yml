@@ -22,3 +22,5 @@ dependencies:
   - torchtext
   - ftfy
   - git+https://github.com/sethah/pytorch-transformer.git
+  - environment_kernels
+

@@ -34,6 +34,12 @@ data_sample:
 	$(PYTHON_INTERPRETER) $(PROJECT_DIR)/src/data/make_sample.py \
 	--data-path $(DATA_DIR)
 
+vocab:
+	$(PYTHON_INTERPRETER) src/models/serialize_vocab.py \
+	--data-path $(DATA_DIR) \
+	--model-path models/openai-finetune
+
+
 data_processed: MAX_DOCS = 0
 data_processed:
 	$(PYTHON_INTERPRETER) $(PROJECT_DIR)/src/data/process_data.py \
