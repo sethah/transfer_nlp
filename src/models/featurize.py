@@ -50,15 +50,26 @@ if __name__ == "__main__":
     vocab = load_vocab(args.encoder_path, special_tokens)
     pos_start = len(vocab)
 
-    TEXT = data.Field(lower=True, fix_length=args.fix_length)
+    TEXT = data.Field(lower=True)
     LABEL = data.Field(sequential=False, unk_token=None)
     TEXT.vocab = vocab
 
+    fields = [('text', TEXT), ('label', LABEL)]
     idx_tokens = {phase: np.load(data_path / "interim" / f"bpe_{phase}_idx.npy")
                   for phase in phases}
-    fields = [('text', TEXT), ('label', LABEL)]
-    datasets = {phase: data.Dataset([data.Example.fromlist([toks, label], fields)
-                        for toks, label in idx_tokens[phase]], fields) for phase in idx_tokens}
+    datasets = {}
+    for phase, sents in idx_tokens.items():
+        truncated = []
+        examples = []
+        for s, l in sents:
+            examples.append(data.Example.fromlist([s[-args.fix_length:], l], fields))
+            truncated.append(max(0, len(s) - args.fix_length))
+        datasets[phase] = data.Dataset(examples, fields)
+        logging.debug(f"Truncated {len(truncated)} docs. Mean: {np.mean(truncated)},"
+                      f"std: {np.std(truncated)}")
+
+    # datasets = {phase: data.Dataset([data.Example.fromlist([toks, label], fields)
+    #                     for toks, label in idx_tokens[phase]], fields) for phase in idx_tokens}
     LABEL.build_vocab(datasets['train'])
     iters = {phase: data.BucketIterator(datasets[phase], repeat=False, train=False,
                                         batch_size=args.batch_size, sort=False)
@@ -79,7 +90,7 @@ if __name__ == "__main__":
                 x = layer(x, mask)
             return x
 
-    model = TruncEncoder(embeds, encoder.layers[:args.layer])
+    model = TruncEncoder(embeds, encoder.layers[:args.layer]).to(train_device)
 
     for p in model.parameters():
         p.requires_grad = False

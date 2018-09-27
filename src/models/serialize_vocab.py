@@ -7,6 +7,7 @@ from tqdm import tqdm
 import ftfy
 import logging
 import os
+import sys
 import subprocess
 
 import spacy
@@ -125,16 +126,19 @@ def text_standardize(text):
 
 def tokenizer(text):
     text = text.replace("<unk>", "unk")
+    text = fixup(text)
     tokens = []
     for tok in nlp(text_standardize(ftfy.fix_text(text))):
         tokens.extend(text_encoder.bpe(tok.text.lower()).split(' '))
+    tokens.append('_classify_')
     return tokens
-# def fixup(x):
-#     x = x.replace('#39;', "'").replace('amp;', '&').replace('#146;', "'").replace(
-#         'nbsp;', ' ').replace('#36;', '$').replace('\\n', "\n").replace('quot;', "'").replace(
-#         '<br />', "\n").replace('\\"', '"').replace('<unk>','u_n').replace(' @.@ ','.').replace(
-#         ' @-@ ','-').replace('\\', ' \\ ')
-#     return re1.sub(' ', html.unescape(x))
+
+def fixup(x):
+    x = x.replace('#39;', "'").replace('amp;', '&').replace('#146;', "'").replace(
+        'nbsp;', ' ').replace('#36;', '$').replace('\\n', "\n").replace('quot;', "'").replace(
+        '<br />', "\n").replace('\\"', '"').replace(' @.@ ','.').replace(
+        ' @-@ ','-').replace('\\', ' \\ ')
+    return re1.sub(' ', html.unescape(x))
 #
 # spacy_en = spacy.load('en')
 # def tokenizer(text): # create a tokenizer function
@@ -153,6 +157,7 @@ if __name__ == "__main__":
     phases = [p for p in ['train', 'test'] if not (save_path / f"bpe_{p}_idx.npy").exists()]
     if len(phases) == 0:
         logging.debug(f"Skipping vocab serialization")
+        sys.exit(0)
 
     encoder_path = model_path / "encoder_bpe_40000.json"
     bpe_path = model_path / "vocab_40000.bpe"
@@ -166,8 +171,8 @@ if __name__ == "__main__":
     if args.special_tokens is not None:
         special_tokens = ",".split(args.special_tokens)
     else:
-        special_tokens = special_tokens = ["<eos>", "<pad>"]
-    vocab = load_vocab(special_tokens, str(encoder_path))
+        special_tokens = special_tokens = ["_classify_", "<pad>"]
+    vocab = load_vocab(str(encoder_path), special_tokens)
 
     nlp = spacy.load('en', disable=['parser', 'tagger', 'ner', 'textcat'])
     text_encoder = TextEncoder(str(encoder_path), str(bpe_path))

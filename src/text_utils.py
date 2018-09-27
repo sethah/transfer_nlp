@@ -10,6 +10,7 @@ class AttentionIterator(object):
         self.iterator = iterator
         # TODO: this leaks abstraction from elsewhere
         self.pos_start_index = pos_start_index
+        self.dataset = self.iterator.dataset
 
     def __iter__(self):
         for batch in self.iterator:
