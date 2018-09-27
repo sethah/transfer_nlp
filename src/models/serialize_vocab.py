@@ -149,6 +149,7 @@ if __name__ == "__main__":
     parser.add_argument('--special-tokens', type=str, default=None)
     parser.add_argument('--model-path', type=str)
     parser.add_argument('--data-path', type=str)
+    parser.add_argument('--temp-dir', type=str, default='/tmp/')
     args = parser.parse_args()
 
     data_path = Path(args.data_path)
@@ -162,7 +163,7 @@ if __name__ == "__main__":
     encoder_path = model_path / "encoder_bpe_40000.json"
     bpe_path = model_path / "vocab_40000.bpe"
     if not model_path.exists():
-        tmp_path = Path("/tmp/") / model_path.stem
+        tmp_path = Path(args.temp_dir) / model_path.stem
         subprocess.call(["git", "clone", "https://github.com/openai/finetune-transformer-lm/",
                          str(tmp_path)])
         os.rename(str(tmp_path / "model"), model_path)
