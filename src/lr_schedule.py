@@ -5,6 +5,10 @@ from torch.nn import Parameter
 
 
 class LearningGroup(object):
+    """
+    Responsible for setting learning rates for an arbitrary group of parameters during learning.
+    It knows when to unfreeze
+    """
 
     def __init__(self, name: str, parameters: List[Parameter], lr_strategy: Callable,
                  unfreeze_at=0):

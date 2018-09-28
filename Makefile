@@ -30,24 +30,23 @@ requirements: test_environment
 data: requirements
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py
 
-data_sample:
-	$(PYTHON_INTERPRETER) $(PROJECT_DIR)/src/data/make_sample.py \
-	--data-path $(DATA_DIR)
-
-vocab: TMP_DIR = /tmp/
-vocab:
+$(DATA_DIR)/interim/vocab: TMP_DIR = /tmp/
+$(DATA_DIR)/interim/vocab: $(DATA_DIR)/processed/aclImdb
 	$(PYTHON_INTERPRETER) src/models/serialize_vocab.py \
 	--data-path $(DATA_DIR) \
 	--model-path models/openai-finetune \
 	--temp-dir $(TMP_DIR)
 
-
-data_processed: MAX_DOCS = 0
-data_processed:
+$(DATA_DIR)/processed/aclImdb: MAX_DOCS = 0
+$(DATA_DIR)/processed/aclImdb: $(DATA_DIR)/raw/aclImdb_v1.tar.gz
 	$(PYTHON_INTERPRETER) $(PROJECT_DIR)/src/data/process_data.py \
 	--data-path $(DATA_DIR) --max-docs $(MAX_DOCS)
 
-data_raw:
+data/sample: $(DATA_DIR)/raw/aclImdb_v1.tar.gz
+	$(PYTHON_INTERPRETER) $(PROJECT_DIR)/src/data/make_sample.py \
+	--data-path $(DATA_DIR)
+
+$(DATA_DIR)/raw/aclImdb_v1.tar.gz:
 	curl -o $(DATA_DIR)/raw/aclImdb_v1.tar.gz http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
 
 ## Delete all compiled Python files
